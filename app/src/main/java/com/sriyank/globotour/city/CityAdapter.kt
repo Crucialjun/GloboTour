@@ -17,20 +17,21 @@ class CityAdapter(val context: Context,var cityList : ArrayList<City> )
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CityViewHolder {
-        val itemView =  LayoutInflater.from(context).inflate(R.layout.list_item_city,parent,false)
+        val itemView =  LayoutInflater.from(context).inflate(R.layout.grid_item_city,parent,false)
         return CityViewHolder(itemView)
     }
 
     override fun onBindViewHolder(holder: CityViewHolder, position: Int) {
         val city = cityList[position]
         holder.setData(city,position)
+        holder.setListeners()
     }
 
     override fun getItemCount(): Int {
         return cityList.size
     }
 
-    inner class CityViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class CityViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),View.OnClickListener {
         private var currentPosition = -1
         private var currentCity : City? = null
 
@@ -64,6 +65,37 @@ class CityAdapter(val context: Context,var cityList : ArrayList<City> )
             }
             this.currentPosition = position
             this.currentCity = city
+        }
+
+        fun setListeners() {
+            imvDelete.setOnClickListener(this@CityViewHolder)
+            imvFavorite.setOnClickListener(this@CityViewHolder)
+        }
+
+        override fun onClick(v: View?) {
+            when(v!!.id){
+                R.id.imv_delete -> deleteItem()
+                R.id.imv_favorite -> favoriteItem()
+            }
+        }
+
+        private fun favoriteItem() {
+            currentCity?.isFavorite = !(currentCity?.isFavorite)!!
+
+            if(currentCity?.isFavorite!!){
+                imvFavorite.setImageDrawable(icFavoriteFilled)
+                VacationSpots.favoriteCityList.add(currentCity!!)
+            }else{
+                imvFavorite.setImageDrawable(icFavoriteBorded)
+                VacationSpots.favoriteCityList.remove(currentCity!!)
+            }
+        }
+
+        private fun deleteItem() {
+            cityList.removeAt(currentPosition)
+            notifyItemRemoved(currentPosition)
+            notifyItemRangeChanged(currentPosition,cityList.size)
+            VacationSpots.favoriteCityList.remove(currentCity!!)
         }
 
     }
